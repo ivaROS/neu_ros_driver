@@ -202,27 +202,22 @@ namespace neuvition_driver {
    virtual void on_pczdata(bool status) {}
    virtual void on_Ladar_Camera( const neuvition::NeuvCameraLadarDatas & neuvcameraladarpos)
    {		
-
 /*
-            std::vector<long int>  vcameraladarpos(642*360, 0);
-           for(int i = 0 ; i < neuvcameraladarpos.size();i++)
-	   { 		
-                  const neuvition::CAMERA_POINT_POS & np  = neuvcameraladarpos[i];
-           //        std::cout << "x = " << np.x << "y = " << np.y << std::endl;
- 	//	   std::cout << "xladar = " << np.ladarx << "yladar = " << np.ladary << "zladar = " << np.ladarz << std::endl;
-
-	           long int ladarpos = np.ladarx | (np.ladary << 20) | (np.ladarz << 40);
-		   int index = np.x * 642 + np.y;
-		   vcameraladarpos[index] = ladarpos;
-
-                   
-		  
-	  
-	   }
-
-                neudrv->neuProcessCameraLadar(vcameraladarpos);
-*/
+		std::vector<long int>  vcameraladarpos(642*360, 0);
 		
+		for(int i = 0 ; i < neuvcameraladarpos.size();i++)
+		{ 		
+			const neuvition::CAMERA_POINT_POS & np  = neuvcameraladarpos[i];
+			//        std::cout << "x = " << np.x << "y = " << np.y << std::endl;
+			//	   std::cout << "xladar = " << np.ladarx << "yladar = " << np.ladary << "zladar = " << np.ladarz << std::endl;
+
+			long int ladarpos = np.ladarx | (np.ladary << 20) | (np.ladarz << 40);
+			int index = np.x * 642 + np.y;
+			vcameraladarpos[index] = ladarpos;
+		}
+
+		neudrv->neuProcessCameraLadar(vcameraladarpos);
+*/
    }
 
 
@@ -365,9 +360,9 @@ void neuvitionDriver::neuCallback(neuvition_driver::NeuvitionNodeConfig &config,
 
 void neuvitionDriver::neuConnect() {
     printf ("Start connecting ...\n");
-    //neuvition::set_camera_status(true);
+    neuvition::set_camera_status(true);
     neuvition::set_flip_axis(false, true);
-    //neuvition::set_mjpg_curl(true);
+    neuvition::set_mjpg_curl(true);
     neuvition::INeuvEvent* phandler = new gEventHandler();
     int ret=neuvition::setup_client(upstream_host.c_str(), upstream_port, phandler, false);
     UNUSED(ret);
