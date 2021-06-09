@@ -542,43 +542,27 @@ void neuvitionDriver::neuInit() {
 }
 
 
-void neuvitionDriver::neuProcessPoint(PointCloudT &cloud) {
+void neuvitionDriver::neuProcessPoint(PointCloudT &cloud) 
+{
+	//need convert to pcl::PointXYZI, 
+    //otherwise the ROS_subscriber will popup warning 'Failed to find match for field intensity'
+	pcl::PointCloud<pcl::PointXYZI>   pcl_points;
+	pcl_points.resize(cloud.size());
 
-    pcl::toROSMsg(cloud, neuvition_pub);
+	for (int i = 0; i < cloud.size(); i++) 
+	{
+		pcl_points.at(i).x = cloud.at(i).x;
+		pcl_points.at(i).y = cloud.at(i).y;
+		pcl_points.at(i).z = cloud.at(i).z;
+		pcl_points.at(i).intensity = cloud.at(i).intensity;
+	}
+	
+	pcl::toROSMsg(pcl_points, neuvition_pub); 
 
-   // const neuvition::NeuGPRMC gprmc =  neuvition::get_gps_details();
-   // neuvition_pub.header.stamp = ros::Time::now();
-  //  if (isTimemode == 1)
-  //  {
-      neuvition_pub.header.stamp = ros::Time::now();
-  //     std::cout<< "sys time " << endl;
-  //  }
-/*
-    else
-   { 
-
-       int idatatime =  gprmc.ddmmyy / 10000;
-       uint32_t itimestamp = (idatatime - 13) * 3600 * 24  + 1605196800;
-       int ihourtime = gprmc.utc;
-       int ihour = ihourtime / 10000;
-       int imin = ihourtime / 100 % 100;
-       int isec = ihourtime  % 100;
-         itimestamp += ihour * 3600 ;
-         itimestamp += imin * 60 ;
-         itimestamp += isec ;
-        
-
-       neuvition_pub.header.stamp =  ros::Time(itimestamp,iMsecTime);
-        std::cout<< "gprmc.utc" << gprmc.utc << endl;
-    }
-  
-  */
-  
-
-
+    neuvition_pub.header.stamp = ros::Time::now();
     neuvition_pub.header.frame_id = frame_id;
-    output_cloud_.publish(neuvition_pub);
 
+    output_cloud_.publish(neuvition_pub);
 }
 
 
