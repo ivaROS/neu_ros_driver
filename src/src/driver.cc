@@ -1,8 +1,6 @@
 #include "ros/ros.h" 
 #include "std_msgs/String.h" 
 #include <neuvition_driver/test.h> 
-
-
 #include <sstream> 
 
 #include <pcl/point_types.h>
@@ -25,8 +23,7 @@
 #include "driver.h"
 #include <tf/transform_listener.h>
 #include <pcl/point_types_conversion.h>    //pcl_conversions.h
-
-
+#include <sensor_msgs/Imu.h>
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -38,14 +35,13 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
+#include "matrix_quarternion.hpp"
 
 using namespace std;
 using namespace pcl;
 
 
 #define UNUSED(var) (void)(var)
-
-neuvition_driver::neuvitionDriver *neudrv=nullptr;
 
 int isImageRotate = 0;
 
@@ -55,16 +51,18 @@ neuvition::NeuvUnits predata;
 uint32_t iFrontFrameTime = 0;
 uint32_t iNowFrameTime = 0;
 uint32_t iMsecTime = 0 ;
+
 /* YELLOW ff/ff/00 RED ff/00/00 MAGENTA ff/00/ff BLUE 00/00/ff CYAN 00/ff/ff GREEN 00/ff/00 */
 const uint32_t coloredge[6]={ 0xffff00, 0xff0000, 0xff00ff, 0x0000ff, 0x00ffff, 0x00ff00 };
+
 uint32_t tof_cycle=65000;  // orig:9000 2m:13000 10m:65000 30m:200000
 
-
-double get_timestamp(void) {
+double get_timestamp(void) 
+{
     struct timeval now;
     gettimeofday(&now, 0);
+    
     return (double)(now.tv_sec) + (double)(now.tv_usec)/1000000.0;
-
 }
 
 void showretval(int ret)
@@ -73,26 +71,38 @@ void showretval(int ret)
         return;
     std::cout<< "ret:"<< ret << std::endl;
 }
-
-
-
-namespace neuvition_driver {
+    
+namespace neuvition_driver 
+{
 
     class gEventHandler : public neuvition::INeuvEvent
     {
+
+    private:
+        neuvitionDriver *neudrv;
+
     public:
-        virtual void on_connect(int code, const char* msg) {
+        gEventHandler(neuvitionDriver* _drv):neudrv(_drv)
+        {
+            std::cout << "The callback instance of driver initialized" << std::endl;
+        }
+
+        virtual void on_connect(int code, const char* msg) 
+        {
             std::cout << std::fixed << std::setprecision(6) << get_timestamp() << "neuvtion: on_connect: " << code << "(" << msg << ")" << std::endl;
-            if (code==0) {
+            if (code==0)
+            {
                 int ret = neuvition::set_reconnect_params(false, 5); showretval(ret);
             }
         }
 
-        virtual void on_disconnect(int code) {
+        virtual void on_disconnect(int code) 
+        {
             std::cout << std::fixed << std::setprecision(6) << get_timestamp() << "neuvition: on_disconnect: "<< code << std::endl;
         }
 
-        virtual void on_response(int code, enum neuvition::neuv_cmd_code cmd) {
+        virtual void on_response(int code, enum neuvition::neuv_cmd_code cmd) 
+        {
             std::cout << std::fixed << std::setprecision(6) << get_timestamp() << "neuvition: on_response[ " << cmd << " ]: " << code << std::endl;
             if (cmd==neuvition::NEUV_CMD_START_SCAN && code==0 )    { std::cout << std::fixed << std::setprecision(6) << get_timestamp() << "neuvition: scanning started..." << std::endl; }
             if (cmd==neuvition::NEUV_CMD_STOP_SCAN && code==0 )     { std::cout << std::fixed << std::setprecision(6) << get_timestamp() << "neuvition: scanning stopped..." << std::endl; }
@@ -103,19 +113,13 @@ namespace neuvition_driver {
         }
 
         virtual void on_framedata(int, int64_t, const neuvition::NeuvUnits&, const neuvition::nvid_t&,const neuvition::NeuvWireDatas&){}
-    //virtual void on_framedata(int, int64_t, const NeuvUnits&, const nvid_t&) = 0; 
-    virtual void on_framedata(int, int64_t, const neuvition::NeuvUnits&, const neuvition::nvid_t&,const neuvition::NeuvCt&){}
 
+        virtual void on_framedata(int, int64_t, const neuvition::NeuvUnits&, const neuvition::nvid_t&,const neuvition::NeuvCt&){}
 
-        virtual void on_framedata(int code,int64_t microsec,const neuvition::NeuvUnits& data,
-            const neuvition::nvid_t& frame_id) {
-
-          
-           std::cout<< "jason print timer " << get_timestamp()  << endl;
-          
-            std::cout<< "code: -----" << code << endl;
-          
-
+        virtual void on_framedata(int code,int64_t microsec, const neuvition::NeuvUnits& data, const neuvition::nvid_t& frame_id) 
+        {
+               std::cout<< "on_framedata -- TS: " << get_timestamp()  << ", -- code: " << code << endl;
+      
             PointCloudT cloud_;
             cloud_.reserve(data.size());
 
@@ -123,183 +127,213 @@ namespace neuvition_driver {
 
             int i = 0 ;
 
-            for (neuvition::NeuvUnits::const_iterator iter = data.begin(); iter != data.end(); iter++) {
-               const neuvition::NeuvUnit& np = (*iter);
-               PointT point;
+            for (neuvition::NeuvUnits::const_iterator iter = data.begin(); iter != data.end(); iter++) 
+            {
+                const neuvition::NeuvUnit& np = (*iter);
+                PointT point;
 
-            //PointXYZRGBATI
-               point.x = np.x*0.001; point.y = np.y*0.001; point.z = np.z*0.001;
-               if(np.z==0) continue;
-               point.a = 255;
-               point.intensity = np.intensity;
-               point.timestamp = np.timestamp;
-               if (i == 0)
-               {
-                 printf("point.timestamp = %lu\n",point.timestamp);
-                 iNowFrameTime = point.timestamp;
-               }
-               i++;
+                //PointXYZRGBATI
+                point.x = np.x*0.001; point.y = np.y*0.001; point.z = np.z*0.001;
 
-     if (neudrv->color_mode==0) { /* 0:polychrome */
-               uint32_t tofcolor=np.tof%tof_cycle;
-               uint32_t tofclass=tofcolor/(tof_cycle/6);
-               uint32_t tofreman=tofcolor%(tof_cycle/6);
-               uint32_t cbase=coloredge[(tofclass+0)%6];
-               uint32_t cnext=coloredge[(tofclass+1)%6];
-               uint32_t ccand=cnext&cbase; UNUSED(ccand);
-               uint32_t ccxor=cnext^cbase;
-               int shift=__builtin_ffs(ccxor)-1;
-               int xincr=(cnext>cbase) ? 1 : -1;
-               uint32_t crender=cbase+xincr*((int)(tofreman*(256.0/(tof_cycle/6)))<<shift);
-               point.r = (crender&0xff0000)>>16;
-               point.g = (crender&0x00ff00)>>8;
-               point.b = (crender&0x0000ff)>>0;
-                } else if (neudrv->color_mode==1) { /* 1:camera */
-               point.r = np.r; point.g = np.g; point.b = np.b;
-            } else if (neudrv->color_mode==2) { /* 2:intensity */
-               //std::cout << "intensity" << endl;
-               uint32_t tofcolor=np.intensity;
-               uint32_t tofclass=tofcolor/(256/6);
-               uint32_t tofreman=tofcolor%(256/6);
-               uint32_t cbase=coloredge[(tofclass+0)%6];
-               uint32_t cnext=coloredge[(tofclass+1)%6];
-               uint32_t ccand=cnext&cbase; UNUSED(ccand);
-               uint32_t ccxor=cnext^cbase;
-               int shift=__builtin_ffs(ccxor)-1;
-               int xincr=(cnext>cbase) ? 1 : -1;
-               uint32_t crender=cbase+xincr*((int)(tofreman*(256.0/(256/6)))<<shift);
-               point.r = (crender&0xff0000)>>16;
-               point.g = (crender&0x00ff00)>>8;
-               point.b = (crender&0x0000ff)>>0;
-           }
-           cloud_.push_back(point);  
+                if(np.z==0) 
+                    continue;
 
-       }
+                point.a = 255;
+                point.intensity = np.intensity;
+                point.timestamp = np.timestamp;
+                
+                if (i == 0)
+                {
+                    printf("point.timestamp = %lu\n",point.timestamp);
+                    iNowFrameTime = point.timestamp;
+                }
+
+                i++;
+
+                if (neudrv->color_mode==0) /* 0:polychrome */
+                { 
+                    uint32_t tofcolor=np.tof%tof_cycle;
+                    uint32_t tofclass=tofcolor/(tof_cycle/6);
+                    uint32_t tofreman=tofcolor%(tof_cycle/6);
+                    uint32_t cbase=coloredge[(tofclass+0)%6];
+                    uint32_t cnext=coloredge[(tofclass+1)%6];
+                    uint32_t ccand=cnext&cbase; UNUSED(ccand);
+                    uint32_t ccxor=cnext^cbase;
+                    int shift=__builtin_ffs(ccxor)-1;
+                    int xincr=(cnext>cbase) ? 1 : -1;
+                    uint32_t crender=cbase+xincr*((int)(tofreman*(256.0/(tof_cycle/6)))<<shift);
+                    point.r = (crender&0xff0000)>>16;
+                    point.g = (crender&0x00ff00)>>8;
+                    point.b = (crender&0x0000ff)>>0;
+                } 
+                else if (neudrv->color_mode==1) /* 1:camera */
+                { 
+                    point.r = np.r; point.g = np.g; point.b = np.b;
+                } 
+                else if (neudrv->color_mode==2) /* 2:intensity */
+                { 
+                    //std::cout << "intensity" << endl;
+                    uint32_t tofcolor=np.intensity;
+                    uint32_t tofclass=tofcolor/(256/6);
+                    uint32_t tofreman=tofcolor%(256/6);
+                    uint32_t cbase=coloredge[(tofclass+0)%6];
+                    uint32_t cnext=coloredge[(tofclass+1)%6];
+                    uint32_t ccand=cnext&cbase; UNUSED(ccand);
+                    uint32_t ccxor=cnext^cbase;
+                    int shift=__builtin_ffs(ccxor)-1;
+                    int xincr=(cnext>cbase) ? 1 : -1;
+                    uint32_t crender=cbase+xincr*((int)(tofreman*(256.0/(256/6)))<<shift);
+                    point.r = (crender&0xff0000)>>16;
+                    point.g = (crender&0x00ff00)>>8;
+                    point.b = (crender&0x0000ff)>>0;
+                }
+
+                cloud_.push_back(point);  
+
+            }// for (neuvition::NeuvUnits::const_iterator iter = data.begin(); iter != data.end(); iter++) 
 
         
-       if (iFrontFrameTime  == 0 )
-       {
-         iMsecTime = 0 ;
-       }
-       else
-       {
-         iMsecTime += ((iNowFrameTime - iFrontFrameTime) / 1000);
-       }
-       if (iMsecTime > 1000 )
-          {
-            iMsecTime -= 1000 ;
-          }   
-       printf("iMsecTime = %ld\n",iMsecTime);
+            if (iFrontFrameTime  == 0 )
+            {
+                iMsecTime = 0 ;
+            }
+            else
+            {
+                iMsecTime += ((iNowFrameTime - iFrontFrameTime) / 1000);
+            }
 
-       //neuvition::jason_camearinfo_clear(frame_id);
-
-       iFrontFrameTime = iNowFrameTime;
-       neudrv->neuProcessPoint(cloud_);
+            if (iMsecTime > 1000 )
+            {
+                iMsecTime -= 1000 ;
+            }
        
-   }
+               printf("iMsecTime = %ld\n",iMsecTime);
 
-   virtual void on_imudata(int code,int64_t microsec,const neuvition::NeuvUnits& data,const neuvition::ImuData& imu) {}
-   virtual void on_pczdata(bool status) {}
-   virtual void on_Ladar_Camera( const neuvition::NeuvCameraLadarDatas & neuvcameraladarpos)
-   {		
+           //neuvition::jason_camearinfo_clear(frame_id);
+
+           iFrontFrameTime = iNowFrameTime;
+
+           neudrv->neuProcessPoint(cloud_);
+       }
+
+       virtual void on_imudata(int code,int64_t microsec,const neuvition::NeuvUnits& data,const neuvition::ImuData& imu) 
+       {
+            sensor_msgs::Imu imu_data;
+
+            imu_data.header.stamp = ros::Time::now();
+            imu_data.header.frame_id = "neuvition";
+
+#define QP(n) (1.0f/(1<<n))
+
+            imu_data.orientation.x = QP(14) * imu.quat_i;
+            imu_data.orientation.y = QP(14) * imu.quat_j;
+            imu_data.orientation.z = QP(14) * imu.quat_k;
+            imu_data.orientation.w = QP(14) * imu.quat_r;
+            
+            imu_data.linear_acceleration.x = 0.0f; 
+            imu_data.linear_acceleration.y = 0.0f;
+            imu_data.linear_acceleration.z = 0.0f;
+
+            imu_data.angular_velocity.x = 0.0f; 
+            imu_data.angular_velocity.y = 0.0f; 
+            imu_data.angular_velocity.z = 0.0f;
+
+            neudrv->IMU_pub.publish(imu_data);
+       }
+
+    virtual void on_pczdata(bool status) 
+    {
+
+    }
+    
+       virtual void on_Ladar_Camera( const neuvition::NeuvCameraLadarDatas & neuvcameraladarpos)
+       {        
 /*
-		std::vector<long int>  vcameraladarpos(642*360, 0);
-		
-		for(int i = 0 ; i < neuvcameraladarpos.size();i++)
-		{ 		
-			const neuvition::CAMERA_POINT_POS & np  = neuvcameraladarpos[i];
-			//        std::cout << "x = " << np.x << "y = " << np.y << std::endl;
-			//	   std::cout << "xladar = " << np.ladarx << "yladar = " << np.ladary << "zladar = " << np.ladarz << std::endl;
+        std::vector<long int>  vcameraladarpos(642*360, 0);
+        
+        for(int i = 0 ; i < neuvcameraladarpos.size();i++)
+        {         
+            const neuvition::CAMERA_POINT_POS & np  = neuvcameraladarpos[i];
+            //        std::cout << "x = " << np.x << "y = " << np.y << std::endl;
+            //       std::cout << "xladar = " << np.ladarx << "yladar = " << np.ladary << "zladar = " << np.ladarz << std::endl;
 
-			long int ladarpos = np.ladarx | (np.ladary << 20) | (np.ladarz << 40);
-			int index = np.x * 642 + np.y;
-			vcameraladarpos[index] = ladarpos;
-		}
+            long int ladarpos = np.ladarx | (np.ladary << 20) | (np.ladarz << 40);
+            int index = np.x * 642 + np.y;
+            vcameraladarpos[index] = ladarpos;
+        }
 
-		neudrv->neuProcessCameraLadar(vcameraladarpos);
+        neudrv->neuProcessCameraLadar(vcameraladarpos);
 */
    }
 
+       virtual void on_mjpgdata(int code, int64_t microsec, cv::Mat Mat) 
+    { 
+        if (Mat.empty()) 
+            return;
 
-   virtual void on_mjpgdata(int code, int64_t microsec, cv::Mat Mat) { 
-       if (Mat.empty()) return;
-     //return ;
-     	// std::cout<< "neuvition:code  " << code << endl;
+        // std::cout<< "neuvition:code  " << code << endl;
         if(isImageRotate == 1)
         {
-             transpose(Mat,Mat);
-          flip(Mat,Mat,1);
-          transpose(Mat,Mat);
-          flip(Mat,Mat,1);
+            transpose(Mat,Mat);
+            flip(Mat,Mat,1);
+            transpose(Mat,Mat);
+            flip(Mat,Mat,1);
         }
         else
         {
 
         }
-       
-       sensor_msgs::ImagePtr msg_ = cv_bridge::CvImage(std_msgs::Header(), "bgr8", Mat).toImageMsg();
-       neudrv->neuProcessImage(msg_);
-   }
+
+        sensor_msgs::ImagePtr msg_ = cv_bridge::CvImage(std_msgs::Header(), "bgr8", Mat).toImageMsg();
+
+        neudrv->neuProcessImage(msg_);
+    }
 };
 
-neuvitionDriver::neuvitionDriver(ros::NodeHandle node, ros::NodeHandle private_nh) {
+neuvitionDriver::neuvitionDriver(ros::NodeHandle node, ros::NodeHandle private_nh) 
+{
+    ROS_INFO_STREAM(" ros version  1.0.2");
 
-
-
- 
- neudrv = this;
-
- ROS_INFO_STREAM(" ros version  1.0.2");
-
- 
-
- 
- 
     // use private node handle to get parameters
- private_nh.param<std::string>("frame_id", frame_id, std::string("neuvition"));
- ROS_INFO_STREAM("frameID [ " << frame_id << " ]" );
+    private_nh.param<std::string>("frame_id", frame_id, std::string("neuvition"));
+    ROS_INFO_STREAM("frameID [ " << frame_id << " ]" );
 
- private_nh.param<int>("pwm_value", pwm_value, 55);
- ROS_INFO_STREAM("pwmValue [ "<< pwm_value << " ] %");
+    private_nh.param<int>("pwm_value", pwm_value, 55);
+    ROS_INFO_STREAM("pwmValue [ "<< pwm_value << " ] %");
 
- private_nh.param<int>("laser_period", laser_period, 0);
- ROS_INFO_STREAM("laserPeriod [ "<< laser_period << " ]");
+    private_nh.param<int>("laser_period", laser_period, 0);
+    ROS_INFO_STREAM("laserPeriod [ "<< laser_period << " ]");
 
- private_nh.param<int>("data_frame", data_frame, 0);
- ROS_INFO_STREAM("dataFrame [ "<< data_frame << " ]");
+    private_nh.param<int>("data_frame", data_frame, 0);
+    ROS_INFO_STREAM("dataFrame [ "<< data_frame << " ]");
 
- private_nh.param<int>("color_mode", color_mode, 0);
- ROS_INFO_STREAM("color_mode [ "<< color_mode << " ]");
-
-
- private_nh.param<int>("upstream_port", upstream_port, 6668);
- ROS_INFO_STREAM("upstreamPort [ "<< upstream_port << " ]");
-
- private_nh.param<std::string>("upstream_host", upstream_host, std::string("192.168.1.101"));
- ROS_INFO_STREAM("upstreamHost [ "<< upstream_host << " ]");
+    private_nh.param<int>("color_mode", color_mode, 0);
+    ROS_INFO_STREAM("color_mode [ "<< color_mode << " ]");
 
 
- private_nh.param<bool>("video_fusion", video_fusion, true);
- ROS_INFO_STREAM("video_fusion [ "<< video_fusion << " ]");  
+    private_nh.param<int>("upstream_port", upstream_port, 6668);
+    ROS_INFO_STREAM("upstreamPort [ "<< upstream_port << " ]");
 
- private_nh.param<int>("laser_image", isImageRotate, 0);
- ROS_INFO_STREAM("laser_image [ "<< isImageRotate << " ]");
- 
- int ifilterSt;
- private_nh.param<int>("laser_filters", ifilterSt, 0);
- ROS_INFO_STREAM("laser_filters [ "<< ifilterSt << " ]");
-
- private_nh.param<int>("laser_time", isTimemode, 0);
- ROS_INFO_STREAM("laser_time [ "<< isTimemode << " ]");
+    private_nh.param<std::string>("upstream_host", upstream_host, std::string("192.168.1.101"));
+    ROS_INFO_STREAM("upstreamHost [ "<< upstream_host << " ]");
 
 
+    private_nh.param<bool>("video_fusion", video_fusion, true);
+    ROS_INFO_STREAM("video_fusion [ "<< video_fusion << " ]");  
 
-   //neuvition::set_g_filter_enabled(true);
-  
- 
- srv_ = boost::make_shared <dynamic_reconfigure::Server<neuvition_driver::NeuvitionNodeConfig> > (private_nh);
- dynamic_reconfigure::Server<neuvition_driver::NeuvitionNodeConfig>::CallbackType f;
- f = boost::bind (&neuvitionDriver::neuCallback, this, _1, _2);
+    private_nh.param<int>("laser_image", isImageRotate, 0);
+    ROS_INFO_STREAM("laser_image [ "<< isImageRotate << " ]");
+
+    int ifilterSt;
+    private_nh.param<int>("laser_filters", ifilterSt, 0);
+    ROS_INFO_STREAM("laser_filters [ "<< ifilterSt << " ]");
+
+    private_nh.param<int>("laser_time", isTimemode, 0);
+    ROS_INFO_STREAM("laser_time [ "<< isTimemode << " ]");
+
+    srv_ = boost::make_shared <dynamic_reconfigure::Server<neuvition_driver::NeuvitionNodeConfig> > (private_nh);
+    dynamic_reconfigure::Server<neuvition_driver::NeuvitionNodeConfig>::CallbackType f;
+    f = boost::bind (&neuvitionDriver::neuCallback, this, _1, _2);
     srv_->setCallback (f); // Set callback function und call initially 
 
     output_cloud_ = node.advertise<sensor_msgs::PointCloud2>("neuvition_cloud", 20);
@@ -307,13 +341,13 @@ neuvitionDriver::neuvitionDriver(ros::NodeHandle node, ros::NodeHandle private_n
     output_img_ = it_.advertise("neuvition_image", 1);
 
     output_cloud_camera = node.advertise<neuvition_driver::test>("neuvition_driver",20);
-    
+
+    //advertise IMU message publisher
+    IMU_pub = node.advertise<sensor_msgs::Imu>("neuvition_IMU",20);;
 }
 
-void neuvitionDriver::neuCallback(neuvition_driver::NeuvitionNodeConfig &config,  uint32_t level) {
-
-
-
+void neuvitionDriver::neuCallback(neuvition_driver::NeuvitionNodeConfig &config,  uint32_t level) 
+{
     std::cout << "neuvitionDriver::neuCallback" << endl;
     std::cout << "config::pwm_value" << config.pwm_value << endl;
      std::cout << "pwm_value" << pwm_value << endl;
@@ -348,23 +382,23 @@ void neuvitionDriver::neuCallback(neuvition_driver::NeuvitionNodeConfig &config,
       neuStartData();
     }
 
-    
-
     isImageRotate = config.laser_image;
-
     
     neuvition::set_g_filter_enabled(true);
-   	//neuSet_g_filter_enabled(true);
 
   }
 
-void neuvitionDriver::neuConnect() {
+void neuvitionDriver::neuConnect() 
+{
     printf ("Start connecting ...\n");
     neuvition::set_camera_status(true);
     neuvition::set_flip_axis(false, true);
     neuvition::set_mjpg_curl(true);
-    neuvition::INeuvEvent* phandler = new gEventHandler();
+
+    neuvition::INeuvEvent* phandler = new gEventHandler(this);
+
     int ret=neuvition::setup_client(upstream_host.c_str(), upstream_port, phandler, false);
+
     UNUSED(ret);
     usleep(2000000);
 }
@@ -474,37 +508,41 @@ void neuvitionDriver::neuVideoFusion(bool value) {
 
 void neuvitionDriver::neuSet_g_filter_enabled(bool value)
 {
-	printf("neuSet_g_filter_enabled: [%s]\n",value? "True":"False");
+    printf("neuSet_g_filter_enabled: [%s]\n",value? "True":"False");
     int ret  = neuvition::set_g_filter_enabled(value);
     usleep(200000);
 }
 
 void neuvitionDriver::neuSet_g_gaus_fit_enabled(bool value)
 {
-	printf("set_g_gaus_fit_enabled: [%s]\n",value? "True":"False");
+    printf("set_g_gaus_fit_enabled: [%s]\n",value? "True":"False");
     int ret  = neuvition::set_g_gaus_fit_enabled(value);
     usleep(200000);
 }
 
 void neuvitionDriver::neuSet_g_linear_fit_enabled(bool value)
 {
-	printf("set_g_linear_fit_enabled: [%s]\n",value? "True":"False");
+    printf("set_g_linear_fit_enabled: [%s]\n",value? "True":"False");
     int ret  = neuvition::set_g_linear_fit_enabled(value);
     usleep(200000);
 }
 
-
-void neuvitionDriver::neuInit() {
+void neuvitionDriver::neuInit() 
+{
 
     neuConnect();
-    if(neuvition::is_connected()) {
+
+    usleep(200000);
+
+    if(neuvition::is_connected()) 
+    {
         std::cout<<std::fixed<<std::setprecision(6)<<get_timestamp()<<" ..connected"<<std::endl;
 
         double hfov=neuvition::get_hfov();
         double vfov=neuvition::get_vfov();
         int device_type=neuvition::get_device_type();
 
-		//neuvition::set_npvt_value(3);
+        //neuvition::set_npvt_value(3);
 
         /*neuvition::NeuPosCor pos_cor=neuvition::get_poscor_params();
         double bias_y=0.0;
@@ -527,37 +565,48 @@ void neuvitionDriver::neuInit() {
         neuSetColorMode(color_mode);
         neuVideoFusion(video_fusion);
 
-
         neuStartData();
-         usleep(200000);
-        neuvition::set_gps_status(true);
-        if(neuvition::is_streaming()) std::cout<<std::fixed<<std::setprecision(6)<<get_timestamp()<<" ..streaming"<<std::endl;
+        usleep(200000);
 
-    } else {
+        neuvition::set_gps_status(true);
+        if(neuvition::is_streaming())
+        { 
+            std::cout<<std::fixed<<std::setprecision(6)<<get_timestamp()<<" ..streaming"<<std::endl;
+        }
+
+        sleep(1);
+
+        //enable IMU data
+           neuvition::set_imu_status(true);
+
+        sleep(1);
+
+    } 
+    else 
+    {
         std::cout<<std::fixed<<std::setprecision(6)<<get_timestamp()<<" failed to connect .. "<<std::endl;
         exit(1);
     }
-
 
 }
 
 
 void neuvitionDriver::neuProcessPoint(PointCloudT &cloud) 
 {
-	//need convert to pcl::PointXYZI, 
+    //need convert to pcl::PointXYZI, 
     //otherwise the ROS_subscriber will popup warning 'Failed to find match for field intensity'
-	pcl::PointCloud<pcl::PointXYZI>   pcl_points;
-	pcl_points.resize(cloud.size());
+    pcl::PointCloud<pcl::PointXYZI>   pcl_points;
+    pcl_points.resize(cloud.size());
 
-	for (int i = 0; i < cloud.size(); i++) 
-	{
-		pcl_points.at(i).x = cloud.at(i).x;
-		pcl_points.at(i).y = cloud.at(i).y;
-		pcl_points.at(i).z = cloud.at(i).z;
-		pcl_points.at(i).intensity = cloud.at(i).intensity;
-	}
-	
-	pcl::toROSMsg(pcl_points, neuvition_pub); 
+    for (int i = 0; i < cloud.size(); i++) 
+    {
+        pcl_points.at(i).x = cloud.at(i).x;
+        pcl_points.at(i).y = cloud.at(i).y;
+        pcl_points.at(i).z = cloud.at(i).z;
+        pcl_points.at(i).intensity = cloud.at(i).intensity;
+    }
+    
+    pcl::toROSMsg(pcl_points, neuvition_pub); 
 
     neuvition_pub.header.stamp = ros::Time::now();
     neuvition_pub.header.frame_id = frame_id;
@@ -575,12 +624,14 @@ void neuvitionDriver::neuProcessImage(sensor_msgs::ImagePtr &msg) {
 }
 void neuvitionDriver::neuProcessCameraLadar(  std::vector<long int>  vcameraladarpos )
 {
-	neuvition_driver::test msg;
+    neuvition_driver::test msg;
               msg.data = vcameraladarpos;
-		output_cloud_camera.publish(msg);
-	//vcameraladarpos.clear();
+        output_cloud_camera.publish(msg);
+    //vcameraladarpos.clear();
 }
-}
+
+
+}////end of file
 
 
 

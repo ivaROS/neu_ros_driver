@@ -42,7 +42,7 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(PointXYZRGBATI,// 注册点类型宏
     (uint32_t,timestamp,timestamp)
     (uint32_t,intensity,intensity)
     )
-
+    
 
 typedef PointXYZRGBATI PointT;
 typedef pcl::PointCloud<PointT> PointCloudT;
@@ -66,13 +66,12 @@ namespace neuvition_driver {
 
         ros::Publisher output_cloud_;
         sensor_msgs::PointCloud2 neuvition_pub;
-	ros::Publisher output_cloud_camera;
 
-        
+        //IMU publisher 
+        ros::Publisher IMU_pub;
+
+        ros::Publisher output_cloud_camera;
         image_transport::Publisher output_img_;
-
-
-
 
         // configuration parameters
         std::string frame_id;            
@@ -85,9 +84,6 @@ namespace neuvition_driver {
         int color_mode;
         bool video_fusion;
 
-
-
-
         void neuConnect();
         void neuStartScan();
         void neuStartData();
@@ -96,9 +92,9 @@ namespace neuvition_driver {
         void neuDisconnect();
         void neuSetLaserPeriod(int value);
 
-		void neuSet_g_filter_enabled(bool enabled);
-		void neuSet_g_gaus_fit_enabled(bool enabled);
-		void neuSet_g_linear_fit_enabled(bool value);
+        void neuSet_g_filter_enabled(bool enabled);
+        void neuSet_g_gaus_fit_enabled(bool enabled);
+        void neuSet_g_linear_fit_enabled(bool value);
 
         void neuSetPwm(int value);
         void neuSetDataFrame(int value);
@@ -106,7 +102,7 @@ namespace neuvition_driver {
         void neuVideoFusion(bool value);
         void neuInit();
         void neuProcessPoint(PointCloudT &cloud);
-		void neuProcessCameraLadar(  std::vector<long int>  vcameraladarpos);
+        void neuProcessCameraLadar(  std::vector<long int>  vcameraladarpos);
 
         //image
         void neuProcessImage(sensor_msgs::ImagePtr &msg);
