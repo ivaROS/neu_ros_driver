@@ -246,7 +246,7 @@ namespace neuvition_driver
 
     }
     
-       virtual void on_Ladar_Camera( const neuvition::NeuvCameraLadarDatas & neuvcameraladarpos)
+       virtual void on_Ladar_Camera(  neuvition::NeuvCameraLadarDatas * neuvcameraladarpos)
        {        
 /*
         std::vector<long int>  vcameraladarpos(642*360, 0);
