@@ -253,7 +253,7 @@ namespace neuvition_driver
         
         for(int i = 0 ; i < neuvcameraladarpos->size();i++)
         {         
-             neuvition::CAMERA_POINT_POS np  = neuvcameraladarpos[i];
+             neuvition::CAMERA_POINT_POS np  = neuvcameraladarpos->at(i);
             //        std::cout << "x = " << np.x << "y = " << np.y << std::endl;
             //       std::cout << "xladar = " << np.ladarx << "yladar = " << np.ladary << "zladar = " << np.ladarz << std::endl;
 
