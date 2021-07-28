@@ -250,15 +250,17 @@ namespace neuvition_driver
        {        
 
         std::vector<long int>  vcameraladarpos(642*360, 0);
-        
+
+        std::cout << "neuvcameraladarpos "  << neuvcameraladarpos->size() << std::endl;
         for(int i = 0 ; i < neuvcameraladarpos->size();i++)
         {         
              neuvition::CAMERA_POINT_POS np  = neuvcameraladarpos->at(i);
-            //        std::cout << "x = " << np.x << "y = " << np.y << std::endl;
-            //       std::cout << "xladar = " << np.ladarx << "yladar = " << np.ladary << "zladar = " << np.ladarz << std::endl;
+                   // std::cout << "x = " << np.x << "y = " << np.y << std::endl;
+                 //  std::cout << "xladar = " << np.ladarx << "yladar = " << np.ladary << "zladar = " << np.ladarz << std::endl;
 
-            long int ladarpos = np.ladarx | (np.ladary << 20) | (np.ladarz << 40);
-            int index = np.x * 642 + np.y;
+           long int ladarpos = np.ladarx | (np.ladary << 20) | (np.ladarz << 40);
+            int index = np.y * 642 + np.x;
+			//std::cout << "index "  << index << std::endl;
             vcameraladarpos[index] = ladarpos;
         }
 
