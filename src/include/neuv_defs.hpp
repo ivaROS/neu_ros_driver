@@ -38,8 +38,11 @@
 #ifndef __NEUVDEFS_H__
 #define __NEUVDEFS_H__
 
-//#define _DLL_EXPORT
+#ifdef _WINDOWS
+#define _DLL_EXPORT
+#else
 #define _LINUX
+#endif
 #ifdef _LINUX
 #define DECLSPEC_EXPORT  
 #define CALLBACK __attribute__((stdcall))
@@ -58,9 +61,6 @@
 #include <cstdlib>
 #include <cstdint>
 #include <opencv2/imgcodecs.hpp>
-
-#define  TEST_WITH_PCL_VIEWER             0
-
 
 namespace neuvition {
 
@@ -93,6 +93,28 @@ namespace neuvition {
 		uint8_t level; 
 		uint8_t tofts; 
 		uint8_t intensityts; 
+
+		NEUV_UNIT& operator = (const NEUV_UNIT& val)
+		{
+			x = val.x; 
+			y = val.y; 
+			z = val.z; 
+			r = val.r; 
+			g = val.g; 
+			b = val.b; 
+			lid = val.lid; 
+			apd_id = val.apd_id; 
+			row= val.row; // line
+			col = val.col; // pixel
+			tof = val.tof; 
+			intensity = val.intensity; 
+			timestamp = val.timestamp;
+			level = val.level; 
+			tofts = val.tofts; 
+			intensityts = val.intensityts; 
+			
+			return *this;
+		}
 	} NeuvUnit;
 
 	typedef struct NEUV_POINT { 
@@ -128,6 +150,12 @@ namespace neuvition {
 		int16_t quat_j; 
 		int16_t quat_k; 
 		int16_t quat_r; 
+		int16_t gro_x;
+		int16_t gro_y;
+		int16_t gro_z;
+		int16_t line_accx;
+		int16_t line_accy;
+		int16_t line_accz;
 	} ImuData;
 
 	typedef struct GPRMC { 
@@ -210,14 +238,28 @@ typedef struct camera_point_pos
 
 }CAMERA_POINT_POS;
 
-	typedef std::vector<std::vector<NeuvUnit> > NeuvUnits_2D;
+   typedef struct _PosCorParams{int xt; int yt;int ctrow; int ctcol; float xcf[24]; float ycf[24];} PosCorParams;
+   typedef struct _CameraParams{int width; int height; float fx ; float fy; float cx; float cy; float k1; float k2; float p1; float p2; float k3;} CameraParams;
+   typedef struct _CamFusionParams{float rx; float ry; float rz; int tx; int ty; int tz;} CamFusionParams;
+   typedef struct _DisCorParams{float dc1; float dc2; float dc3; float dc4;float dc5; float dc6; float dc7;float dc8;}DisCorParams;
+   typedef struct _CenterCorParams{float ry; float rx;}CenterCorParams;
+
+   typedef struct _ZPulse{int z; float a; float b; float c; float d; float e; float zcf[9];} ZPulse;
+   typedef struct _APDPulse{int pixel; int line; float a0; float b0; float a1; float b1;} APDPulse;
+   typedef struct _RefCorParams{ZPulse zpulse[2]; APDPulse apdpulse[3];} RefCorParams;
+   typedef struct _SurfaceCorParams{float zcf0[36 * 90];} SurfaceCorParams;
+ 
+
 	typedef std::vector<NeuvUnit> NeuvUnits;
+    typedef std::vector<std::vector<NeuvUnit> > NeuvUnits_2D;
+
 	typedef std::vector<NeuvPoint> NeuvPoints;
 	typedef std::vector<double> LaserIncidentAngles;
 	typedef std::vector<NeuvWireData> NeuvWireDatas;
 	typedef std::vector<CAMERA_POINT_POS> NeuvCameraLadarDatas;
 
-	enum neuv_device_type { TITAN_M1, TITAN_M1_PRO, TITAN_M1_PLUS, TITAN_M1_R, TITAN_S1,TITAN_M1_A, TITAN_M1_SL, TITAN_M2, TITAN_M1_M};
+	enum neuv_connect_type { ONLY_TCP, TCP_AND_MULTICAST, ONLY_MULTICAST};
+	enum neuv_device_type { TITAN_M1, TITAN_M1_PRO, TITAN_M1_PLUS, TITAN_M1_R, TITAN_S1,TITAN_M1_A, TITAN_M1_SL, TITAN_M2, TITAN_M1_M, TITAN_M1_PRO_SL, TITAN_M1_R_SL};
 	enum neuv_cmd_code {
 		NEUV_CMD_START_SCAN = 1,
 		NEUV_CMD_STOP_SCAN = 2,
@@ -253,6 +295,7 @@ typedef struct camera_point_pos
 		NEUV_CMD_SET_CAM_Z_DEVIATE = 44,
 		NEUV_CMD_STILL_ALIVE = 45,
 		NEUV_CMD_GPS_UPDATED = 46,
+		NEUV_CMD_SET_VOLTAGE_OFFSET = 50,
 		NEUV_CMD_NIL = 0xffff,
 
 		NEUV_CMD_TEMP0 = 400,
@@ -296,7 +339,7 @@ typedef struct camera_point_pos
 		virtual void on_imudata(int, int64_t, const NeuvUnits&, const ImuData&) = 0;
 		virtual void on_mjpgdata(int, int64_t, cv::Mat) = 0;
 		virtual void on_pczdata(bool) = 0;
-		virtual void on_Ladar_Camera( const NeuvCameraLadarDatas & ) = 0;
+		virtual void on_Ladar_Camera(  NeuvCameraLadarDatas * ) = 0;
 
 	};
 	typedef struct _NeuvEventCallBack {
@@ -308,9 +351,25 @@ typedef struct camera_point_pos
 		void(CALLBACK* on_imudata)(int, int64_t, const NeuvUnit*,int, ImuData);
 		void(CALLBACK* on_pczdata)(bool);
 	}NeuvEventCallBack;
+
+	class  NeuvEventPCZCallBack {
+		public:
+	virtual void on_framedata(int, int64_t, const NeuvUnits&, const nvid_t&) = 0;
+		
+	};
 	
 
+	DECLSPEC_EXPORT PosCorParams * Get_Pcz_PosCorParams();
+
+	DECLSPEC_EXPORT void Set_Pcz_PosCorParams(PosCorParams * params);
+
+	DECLSPEC_EXPORT void set_pczevent_callback(NeuvEventPCZCallBack  * pczevent_cb_t);
+
+	DECLSPEC_EXPORT void open_pczdata(char * absolutefilepath);
+
 	DECLSPEC_EXPORT INeuvEvent* set_event_callback(NeuvEventCallBack event_cb_t);
+
+	
 
 	DECLSPEC_EXPORT int compute_tof2xyz_table(const double angle_x, const double angle_y, const double bias_y, const int device_type, const NeuPosCor& pos_cor);
 	DECLSPEC_EXPORT void compute_tof2xyz_table_with_multi_lasers(const LaserIncidentAngles& angles, const int device_type, const NeuPosCor& pos_cor);
@@ -318,6 +377,7 @@ typedef struct camera_point_pos
 	DECLSPEC_EXPORT uint64_t htonll(uint64_t val);
 
 	DECLSPEC_EXPORT int setup_client(const char* host, const int port, INeuvEvent* handler, const bool flag);
+	DECLSPEC_EXPORT int setup_client2(const char *host_addr, const int host_port, const char *listen_addr, const char *multi_addr, const int multi_port, INeuvEvent *handler, const bool flag, neuv_connect_type connect_type);
 	DECLSPEC_EXPORT int teardown_client();
 	DECLSPEC_EXPORT int start_scan();
 	DECLSPEC_EXPORT int stop_scan();
@@ -335,6 +395,7 @@ typedef struct camera_point_pos
 	DECLSPEC_EXPORT int set_laser_interval(const int index);
 	DECLSPEC_EXPORT int set_scan_mode(const int index);
 	DECLSPEC_EXPORT int set_frame_frequency(const int fps);
+	DECLSPEC_EXPORT int set_frame_line_quantity(const int frameline);
 	DECLSPEC_EXPORT int set_camera_status(const bool enabled);
 	DECLSPEC_EXPORT int set_imu_status(const bool enabled);
 	DECLSPEC_EXPORT int set_gps_status(const bool enabled);
@@ -345,8 +406,11 @@ typedef struct camera_point_pos
 	DECLSPEC_EXPORT NeuPosCor get_poscor_params();
 	DECLSPEC_EXPORT NeuvLaserStatus get_laser_status();
 	DECLSPEC_EXPORT int get_frame_frequency();
+	DECLSPEC_EXPORT int get_frame_line_quantity();
 	DECLSPEC_EXPORT int get_scan_mode();
 	DECLSPEC_EXPORT int get_device_type();
+	DECLSPEC_EXPORT int get_tof_one_length();
+	DECLSPEC_EXPORT int get_tof_with_timestamp();
 	DECLSPEC_EXPORT bool is_camera_on();
 	DECLSPEC_EXPORT bool is_imu_on();
 	DECLSPEC_EXPORT int set_data_save(const bool enabled);
@@ -383,8 +447,26 @@ typedef struct camera_point_pos
 	DECLSPEC_EXPORT int set_jason_process_c_fusion(uint16_t pixel_id, uint16_t  line_id, NeuvUnit& point, const cv::Mat &mjpgMat);
 
 	DECLSPEC_EXPORT int jason_cameartopoint_pos(int x,int y,int & pixel_id,int & line_id,int & cloudpointx,int & cloudpointy,int threadid);
+	DECLSPEC_EXPORT int jason_cameartopointlist_pos(int x,int y,int & pixel_id,int & line_id,int & cloudpointx,int & cloudpointy,int threadid);
 	DECLSPEC_EXPORT cv::Mat get_jason_camearmat(int threadid);
+	DECLSPEC_EXPORT cv::Mat get_jasonlist_camearmat(int threadid);
 	DECLSPEC_EXPORT void jason_camearinfo_clear(int threadid);
+	DECLSPEC_EXPORT void jason_camearinfolist_clear(int threadid);
+	DECLSPEC_EXPORT void jason_camearinfo_Add(int threadid);
+	
+	DECLSPEC_EXPORT	void jason_get_c_flip_axis(bool flip_x, bool flip_y);
+	DECLSPEC_EXPORT void JasonSet_config_params(char * configstr);
+	DECLSPEC_EXPORT	std::string JasonGet_config_params();
+
+	DECLSPEC_EXPORT void jason_pcz_correct1(NeuvUnits* points);
+	DECLSPEC_EXPORT void jason_pcz_correct2(NeuvUnits* points,int device_type);
+	DECLSPEC_EXPORT void jason_pcz_correct_fun(NeuvUnits* points,int device_type);
+
+
+
+	DECLSPEC_EXPORT void lidarHardware_json(const char *ipadress,char * datajson);
+	DECLSPEC_EXPORT void lidarCalibrtions_json(const char *ipadress,char * datajson);
+	DECLSPEC_EXPORT void lidarVerifications_json(const char *ipadress,char * datajson);
 
 	DECLSPEC_EXPORT int set_log_output_enabled(bool enabled);
 	DECLSPEC_EXPORT bool is_task_mode_on();
@@ -405,6 +487,7 @@ typedef struct camera_point_pos
 	DECLSPEC_EXPORT int set_c_mos_filter_enabled(bool enabled);
     DECLSPEC_EXPORT int set_c_cor_binary_options(uint8_t flag);
 
+	DECLSPEC_EXPORT int set_camera_fps(int video_fps);
 	DECLSPEC_EXPORT int set_pcz_path(const char* pczPath);
 	DECLSPEC_EXPORT void get_pcz_path_id(char * pczId);
 	DECLSPEC_EXPORT int set_c_filter_enabled(bool enabled);
@@ -425,14 +508,18 @@ typedef struct camera_point_pos
     DECLSPEC_EXPORT int set_c_container_dispresion_depth(int depth);
     DECLSPEC_EXPORT int set_c_container_manual_handle(int is_handle);
 
+
+	//ship bridge
+	DECLSPEC_EXPORT int set_c_ship_bridge_callback(on_container_data_callback callback);
+	DECLSPEC_EXPORT int set_c_ship_bridge_enabled(bool enabled);
+	DECLSPEC_EXPORT int set_c_ship_bridge_h1(int h);
+	DECLSPEC_EXPORT int set_c_ship_bridge_h2(int h);
+	DECLSPEC_EXPORT int set_c_ship_bridge_h3(int h);
+	DECLSPEC_EXPORT int set_c_ship_bridge_h4(int h);
+
+
     //salt pile
     DECLSPEC_EXPORT int set_c_salt_pile_params(int status, int pos_id);
-
-	///TEST
-	DECLSPEC_EXPORT void g_gaus_fit(neuvition::nvid_t frame_id, neuvition::NeuvUnits* points);
-	DECLSPEC_EXPORT void g_gaus_fit_via_LOAM(neuvition::nvid_t frame_id, neuvition::NeuvUnits *points);
-	DECLSPEC_EXPORT void Load_Matrix_FromFile(const char*);
-	
 #ifdef _DLL_EXPORT
 #ifdef __cplusplus
 	}
