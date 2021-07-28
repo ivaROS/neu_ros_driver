@@ -248,10 +248,10 @@ namespace neuvition_driver
     
        virtual void on_Ladar_Camera(  neuvition::NeuvCameraLadarDatas * neuvcameraladarpos)
        {        
-/*
+
         std::vector<long int>  vcameraladarpos(642*360, 0);
         
-        for(int i = 0 ; i < neuvcameraladarpos.size();i++)
+        for(int i = 0 ; i < neuvcameraladarpos->size();i++)
         {         
             const neuvition::CAMERA_POINT_POS & np  = neuvcameraladarpos[i];
             //        std::cout << "x = " << np.x << "y = " << np.y << std::endl;
@@ -263,7 +263,7 @@ namespace neuvition_driver
         }
 
         neudrv->neuProcessCameraLadar(vcameraladarpos);
-*/
+
    }
 
        virtual void on_mjpgdata(int code, int64_t microsec, cv::Mat Mat) 
