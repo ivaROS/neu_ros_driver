@@ -1,6 +1,4 @@
-This Software License is hold by Neuvition, Inc. www.neuvition.com
-Which describes the interface of interact with Lidar devices.
- 
+This package describes the interface of interact with Neuvition's Lidar devices.
 
 The dependences:
 1.curl version
