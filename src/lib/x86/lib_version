@@ -2,7 +2,12 @@
 
 Library Version ------------------------------------------------------------------- 
 
+-- 2021-8-12 -- 
+28fb1c026b4c0608c4f72316a23d5e74  libneusdk.so.2.9.7 --> dd87a7c5cef1b928d0c9d6ab1c7305727de85363  (HEAD -> master, origin/master, origin/HEAD)
 
+
+
+------------------------------------------------------------------------------------
 commit 41b5ac0195870d97a075e30562639e3200fafb94 (HEAD -> master, origin/master, origin/HEAD)
 Author: cisson.hong <cisson.hong@easiio.com>
 Date:   Tue Jul 13 19:44:40 2021 +0800
