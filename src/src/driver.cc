@@ -139,13 +139,15 @@ namespace neuvition_driver
                     continue;
 
                 point.a = 255;
-                point.intensity = np.intensity;
-                point.timestamp = np.timestamp;
+                  point.intensity = np.intensity;
+           
+            point.time_sec = np.time_sec;
+                point.time_usec = np.time_usec;
                 
                 if (i == 0)
                 {
-                    printf("point.timestamp = %lu\n",point.timestamp);
-                    iNowFrameTime = point.timestamp;
+                    printf( "timestamp sec = %ld, usec=%d", np.time_sec, np.time_usec);
+                    iNowFrameTime = point.time_sec;
                 }
 
                 i++;
@@ -251,7 +253,9 @@ namespace neuvition_driver
 
         std::vector<long int>  vcameraladarpos(642*360, 0);
 
+
         std::cout << "neuvcameraladarpos "  << neuvcameraladarpos->size() << std::endl;
+
         for(int i = 0 ; i < neuvcameraladarpos->size();i++)
         {         
              neuvition::CAMERA_POINT_POS np  = neuvcameraladarpos->at(i);

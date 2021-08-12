@@ -28,8 +28,9 @@ struct PointXYZRGBATI              //定义点类型结构
 {
   PCL_ADD_POINT4D; // This adds the members x,y,z which can also be accessed using the point (which is float[4])
   PCL_ADD_UNION_RGB;
-  uint32_t timestamp;
-  uint32_t intensity;
+     uint32_t time_sec;
+        uint32_t time_usec;
+uint32_t intensity;
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW// 确保new操作符对齐操作
 }EIGEN_ALIGN16;// 强制SSE对齐
 
@@ -39,7 +40,8 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(PointXYZRGBATI,// 注册点类型宏
     (float,y,y)
     (float,z,z)
     (uint32_t,rgba,rgba)
-    (uint32_t,timestamp,timestamp)
+  (uint32_t, time_sec, time_sec)
+(uint32_t, time_usec, time_usec)
     (uint32_t,intensity,intensity)
     )
     

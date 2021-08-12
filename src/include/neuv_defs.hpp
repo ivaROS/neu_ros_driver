@@ -89,7 +89,9 @@ namespace neuvition {
 		uint16_t col; // pixel
 		uint32_t tof; 
 		uint8_t intensity; 
-		uint32_t timestamp;
+		// uint32_t timestamp;
+		uint32_t time_sec;
+		uint32_t time_usec;
 		uint8_t level; 
 		uint8_t tofts; 
 		uint8_t intensityts; 
@@ -108,7 +110,9 @@ namespace neuvition {
 			col = val.col; // pixel
 			tof = val.tof; 
 			intensity = val.intensity; 
-			timestamp = val.timestamp;
+			// timestamp = val.timestamp;
+			time_sec = val.time_sec;
+			time_usec = val.time_usec;
 			level = val.level; 
 			tofts = val.tofts; 
 			intensityts = val.intensityts; 
@@ -339,7 +343,7 @@ typedef struct camera_point_pos
 		virtual void on_imudata(int, int64_t, const NeuvUnits&, const ImuData&) = 0;
 		virtual void on_mjpgdata(int, int64_t, cv::Mat) = 0;
 		virtual void on_pczdata(bool) = 0;
-		virtual void on_Ladar_Camera(  NeuvCameraLadarDatas * ) = 0;
+		virtual void on_Ladar_Camera(neuvition::NeuvCameraLadarDatas * neuvcameraladardatas) = 0;
 
 	};
 	typedef struct _NeuvEventCallBack {
