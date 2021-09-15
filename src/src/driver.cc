@@ -101,6 +101,11 @@ namespace neuvition_driver
             std::cout << std::fixed << std::setprecision(6) << get_timestamp() << "neuvition: on_disconnect: "<< code << std::endl;
         }
 
+        virtual void on_lidar_info_status(neuvition::LidarInfoStatus*)
+		{
+			//TODO: nothing		
+		}
+
         virtual void on_response(int code, enum neuvition::neuv_cmd_code cmd) 
         {
             std::cout << std::fixed << std::setprecision(6) << get_timestamp() << "neuvition: on_response[ " << cmd << " ]: " << code << std::endl;

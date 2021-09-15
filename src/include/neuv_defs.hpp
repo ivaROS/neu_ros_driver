@@ -242,10 +242,36 @@ typedef struct camera_point_pos
 
 }CAMERA_POINT_POS;
 
+typedef struct LIDAR_INFO_STATUS
+{
+	char device_type[32];
+	char serial_number[32];
+	char manufacturer[32];
+	char date_of_manufacture[32];
+	char hardware_ver[32];
+	char software_ver[32];
+	char auth_code[32];
+	uint8_t horizontal_fov;
+	uint8_t vertical_fov;
+	uint32_t max_distance;
+	uint16_t accuracy;
+	uint16_t wave_length;
+	uint32_t curr_time;
+	uint32_t power_on_time;
+	uint16_t laser_power;
+	uint16_t fps;
+	uint16_t laser_rate;
+	uint8_t cam_status;
+	uint8_t lidar_status;
+	float lidar_temperature;
+} LidarInfoStatus;
+
    typedef struct _PosCorParams{int xt; int yt;int ctrow; int ctcol; float xcf[24]; float ycf[24];} PosCorParams;
+   typedef struct _SLPosCorParams{int xt; int ctcol; float xcf[2];} SLPosCorParams; 
    typedef struct _CameraParams{int width; int height; float fx ; float fy; float cx; float cy; float k1; float k2; float p1; float p2; float k3;} CameraParams;
    typedef struct _CamFusionParams{float rx; float ry; float rz; int tx; int ty; int tz;} CamFusionParams;
    typedef struct _DisCorParams{float dc1; float dc2; float dc3; float dc4;float dc5; float dc6; float dc7;float dc8;}DisCorParams;
+   typedef struct _DisZCorParams{float dc1; float dc2; float dc3; float dc4;float dc5; float dc6; float dc7;float dc8;}DisZCorParams;
    typedef struct _CenterCorParams{float ry; float rx;}CenterCorParams;
 
    typedef struct _ZPulse{int z; float a; float b; float c; float d; float e; float zcf[9];} ZPulse;
@@ -300,6 +326,7 @@ typedef struct camera_point_pos
 		NEUV_CMD_STILL_ALIVE = 45,
 		NEUV_CMD_GPS_UPDATED = 46,
 		NEUV_CMD_SET_VOLTAGE_OFFSET = 50,
+		NEUV_CMD_GET_LIDAR_INFO_STATUS = 51,
 		NEUV_CMD_NIL = 0xffff,
 
 		NEUV_CMD_TEMP0 = 400,
@@ -344,6 +371,7 @@ typedef struct camera_point_pos
 		virtual void on_mjpgdata(int, int64_t, cv::Mat) = 0;
 		virtual void on_pczdata(bool) = 0;
 		virtual void on_Ladar_Camera(neuvition::NeuvCameraLadarDatas * neuvcameraladardatas) = 0;
+		virtual void on_lidar_info_status(neuvition::LidarInfoStatus * lidarInfoStatus) = 0;
 
 	};
 	typedef struct _NeuvEventCallBack {
@@ -409,6 +437,7 @@ typedef struct camera_point_pos
 	DECLSPEC_EXPORT NeuGPRMC get_gps_details();
 	DECLSPEC_EXPORT NeuPosCor get_poscor_params();
 	DECLSPEC_EXPORT NeuvLaserStatus get_laser_status();
+	DECLSPEC_EXPORT int get_lidar_info_status();
 	DECLSPEC_EXPORT int get_frame_frequency();
 	DECLSPEC_EXPORT int get_frame_line_quantity();
 	DECLSPEC_EXPORT int get_scan_mode();
@@ -448,9 +477,9 @@ typedef struct camera_point_pos
 	DECLSPEC_EXPORT int set_g_remove_ground_enabled(bool enabled);
 	DECLSPEC_EXPORT int set_jason_filter_enabled(bool enabled);
 	DECLSPEC_EXPORT int set_jason_tof_value(int value);
-	DECLSPEC_EXPORT int set_jason_process_c_fusion(uint16_t pixel_id, uint16_t  line_id, NeuvUnit& point, const cv::Mat &mjpgMat);
+	DECLSPEC_EXPORT int set_jason_process_c_fusion(NeuvUnits& point, const cv::Mat &mjpgMat);
 
-	DECLSPEC_EXPORT int jason_cameartopoint_pos(int x,int y,int & pixel_id,int & line_id,int & cloudpointx,int & cloudpointy,int threadid);
+	DECLSPEC_EXPORT int jason_cameartopoint_pos(int x,int y,int & pixel_id,int & line_id,int & cloudpointx,int & cloudpointy,CAMERA_POINT_POS * temppos,int threadid);
 	DECLSPEC_EXPORT int jason_cameartopointlist_pos(int x,int y,int & pixel_id,int & line_id,int & cloudpointx,int & cloudpointy,int threadid);
 	DECLSPEC_EXPORT cv::Mat get_jason_camearmat(int threadid);
 	DECLSPEC_EXPORT cv::Mat get_jasonlist_camearmat(int threadid);
