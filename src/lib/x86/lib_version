@@ -2,6 +2,9 @@
 
 Library Version ------------------------------------------------------------------- 
 
+md5sum:cf8548eba191099846ce0bec8f4b5264 libneusdk.so.3.0.2 --> commit c3ea13a99a4ac894cf486dd9820845d4bab816c9 (HEAD -> master, origin/master, origin/HEAD)
+
+
 -- 2021-8-12 -- 
 28fb1c026b4c0608c4f72316a23d5e74  libneusdk.so.2.9.7 --> dd87a7c5cef1b928d0c9d6ab1c7305727de85363  (HEAD -> master, origin/master, origin/HEAD)
 
