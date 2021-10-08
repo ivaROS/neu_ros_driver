@@ -63,7 +63,7 @@ catkin_package(CATKIN_DEPENDS message_runtime ${${PROJECT_NAME}_CATKIN_DEPS} INC
 # compile the driver and input library
 add_subdirectory(src)
 
-install(DIRECTORY include/${PROJECT_NAME}/
+install(DIRECTORY include/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 install(FILES nodelet_neuvition.xml
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
