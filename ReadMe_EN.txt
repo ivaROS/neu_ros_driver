@@ -14,11 +14,11 @@ https://github.com/ros-perception/vision_opencv.git
 
 2-2. checkout the source code to the same version of your installed openCV
 
-2-3. run catkin_make to do compile，then install the components. for example: (you need change the INSTALL_PREFIX to your openCV path and ros path)
+2-3. run catkin_make to do compile，then install the components. for example: (you need change the INSTALL_PREFIX to your openCV path and ros path, and may need load ROS environment with 'source /opt/ros/melodic/setup.bash')
 catkin_make -DOpencv_DIR=/usr/share/OpenCV  -DCMAKE_INSTALL_PREFIX=/opt/ros/melodic install
 
 
-3.compile the source code of neuvition_driver(you need change the INSTALL_PREFIX to your openCV path and ros path)
+3.compile the source code of neuvition_driver(you need change the INSTALL_PREFIX to your openCV path and ros path, and may need load ROS environment with 'source /opt/ros/melodic/setup.bash')
 catkin_make -DOpencv_DIR=/usr/share/OpenCV  -DCMAKE_INSTALL_PREFIX=/opt/ros/melodic install
 
 4.the default SDK library is for 'x86' arch, which locates in 'neu_ros_driver/src/lib/libneusdk_boost_1_65.so'. 

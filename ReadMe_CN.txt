@@ -13,10 +13,10 @@ https://github.com/ros-perception/vision_opencv.git
 
 2-2.checkout与用户系统安装的openCV相同的版本
 
-2-3.运行catkin_make编译，安装更新ROS相关库文件，举例如下(openCV、ros的安装目录需对应修改)
+2-3.运行catkin_make编译，安装更新ROS相关库文件，举例如下(openCV、ros的安装目录需对应修改, 一般需要提前载入ROS系统环境 'source /opt/ros/melodic/setup.bash')
 catkin_make -DOpencv_DIR=/usr/share/OpenCV  -DCMAKE_INSTALL_PREFIX=/opt/ros/melodic install
 
-3.编译neuvition_driver，举例如下(openCV、ros的安装目录需对应修改)
+3.编译neuvition_driver，举例如下(openCV、ros的安装目录需对应修改，一般需要提前载入ROS系统环境 'source /opt/ros/melodic/setup.bash')
 catkin_make -DOpencv_DIR=/usr/share/OpenCV  -DCMAKE_INSTALL_PREFIX=/opt/ros/melodic install
 
 4.本SDK默认运行环境为X86, SDK library存放在neu_ros_driver/src/lib/libneusdk_boost_1_65.so 
