@@ -14,7 +14,7 @@ target_link_libraries(neuvition_node
   ${PCL_LIBRARIES}
   ${OpenCV_LIBS}
   ${LIBCURL}
-  ${PROJECT_SOURCE_DIR}/lib/libneusdk_boost_1_65.so
+  ${PROJECT_SOURCE_DIR}/lib/libneusdk_boost.so
 )
 
 #${Boost_LIBRARIES}
