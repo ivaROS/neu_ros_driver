@@ -8,11 +8,14 @@ set  (LIBCURL ${PROJECT_SOURCE_DIR}/lib/libcurl.so)
 set(OpenCV_DIR /usr/share/OpenCV)
 find_package(OpenCV 3 REQUIRED)
 
+find_package(Boost REQUIRED COMPONENTS system thread)
+
 #${Boost_LIBRARIES}
 target_link_libraries(neuvition_node
   ${catkin_LIBRARIES} 
   ${PCL_LIBRARIES}
   ${OpenCV_LIBS}
+  ${Boost_LIBRARIES}
   ${LIBCURL}
   ${PROJECT_SOURCE_DIR}/lib/libneusdk_boost.so
 )
@@ -25,6 +28,7 @@ target_link_libraries(neuvdrv_nodelet
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
   ${OpenCV_LIBS}
+  ${Boost_LIBRARIES}
   ${LIBCURL}
 )
 
@@ -50,7 +54,7 @@ install(TARGETS neuvition_node
 
 install(CODE "execute_process(COMMAND \"${CMAKE_COMMAND}\" -E create_symlink
                         ${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_BIN_DESTINATION}/libneusdk.so.3.0.2
-						${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_LIB_DESTINATION}/libneusdk_boost_1_65.so)"
+						${CMAKE_INSTALL_PREFIX}/${CATKIN_PACKAGE_LIB_DESTINATION}/libneusdk_boost.so)"
 )
 
 
