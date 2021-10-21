@@ -604,9 +604,9 @@ void neuvitionDriver::neuInit()
 
 void neuvitionDriver::neuProcessPoint(PointCloudT &cloud) 
 {
-    //need convert to pcl::PointXYZI, 
+      //need convert to pcl::PointXYZI, 
     //otherwise the ROS_subscriber will popup warning 'Failed to find match for field intensity'
-    pcl::PointCloud<pcl::PointXYZI>   pcl_points;
+    pcl::PointCloud<PointT>   pcl_points;
     pcl_points.resize(cloud.size());
 
     for (int i = 0; i < cloud.size(); i++) 
@@ -614,6 +614,11 @@ void neuvitionDriver::neuProcessPoint(PointCloudT &cloud)
         pcl_points.at(i).x = cloud.at(i).x;
         pcl_points.at(i).y = cloud.at(i).y;
         pcl_points.at(i).z = cloud.at(i).z;
+	pcl_points.at(i).r = cloud.at(i).r;
+	pcl_points.at(i).g = cloud.at(i).g;
+	pcl_points.at(i).b = cloud.at(i).b;
+	pcl_points.at(i).a = 255;
+	pcl_points.at(i).time_sec = cloud.at(i).time_sec;
         pcl_points.at(i).intensity = cloud.at(i).intensity;
     }
     
