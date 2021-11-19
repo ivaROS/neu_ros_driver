@@ -1,3 +1,6 @@
+//removed SDK link option to avoid error on user end
+md5sum:8e9180ff844978faa3e096b012b3b1bc libneusdk_boost_1_65.so.3.0.2 --> commit 6e623070dd95abf8c70899d5e1b516ac5c2af303 (HEAD -> master, origin/master, origin/HEAD)
+
 
 
 Library Version ------------------------------------------------------------------- 
