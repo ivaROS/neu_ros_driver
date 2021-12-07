@@ -21,12 +21,16 @@ catkin_make -DOpencv_DIR=/usr/share/OpenCV  -DCMAKE_INSTALL_PREFIX=/opt/ros/melo
 3.compile the source code of neuvition_driver(you need change the INSTALL_PREFIX to your openCV path and ros path, and may need load ROS environment with 'source /opt/ros/melodic/setup.bash')
 catkin_make -DOpencv_DIR=/usr/share/OpenCV  -DCMAKE_INSTALL_PREFIX=/opt/ros/melodic install
 
-4.the default SDK library is for 'x86' arch, which locates in 'neu_ros_driver/src/lib/libneusdk_boost_1_65.so'. 
+4.the default SDK library is for 'x86' arch, which locates in 'neu_ros_driver/src/lib/libneusdk_boost_*.so'. 
   you can modify this linker for 'arm' architecture as well. 
 
 5. launch neuvition_driver
 roslaunch neuvition_driver neuvition_driver.launch 
 
 6. you can change the parameters in 'driverparams.yaml' if need
+
+[Known issue]:
+the driver will crash if the boost version linked in library "neu_ros_driver/src/lib/libneusdk_boost.so" not compitalbe with system installed versioin.
+->if the installed boost version lower than 1.70 (cat include/boost/version.hpp),  you should link libneusdk_boost.so -> "x86/libneusdk_boost_1_65.so.3.0.2"
 
 

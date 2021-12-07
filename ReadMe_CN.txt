@@ -19,13 +19,18 @@ catkin_make -DOpencv_DIR=/usr/share/OpenCV  -DCMAKE_INSTALL_PREFIX=/opt/ros/melo
 3.编译neuvition_driver，举例如下(openCV、ros的安装目录需对应修改，一般需要提前载入ROS系统环境 'source /opt/ros/melodic/setup.bash')
 catkin_make -DOpencv_DIR=/usr/share/OpenCV  -DCMAKE_INSTALL_PREFIX=/opt/ros/melodic install
 
-4.本SDK默认运行环境为X86, SDK library存放在neu_ros_driver/src/lib/libneusdk_boost_1_65.so 
-  同时也提供了arm的SDK library. 请在编译时相应修改neu_ros_driver/src/lib/libneusdk_boost_1_65.so对应的链接
+4.本SDK默认运行环境为X86, SDK library存放在neu_ros_driver/src/lib/libneusdk_boost_*.so 
+  同时也提供了arm的SDK library. 请在编译时相应修改neu_ros_driver/src/lib/libneusdk_boost_*.so对应的链接
 
 5.启动neuvition_driver
 roslaunch neuvition_driver neuvition_driver.launch 
 
 6.可以按需要修改 driverparams.yaml 里面的参数，例如IP地址、port端口等
+
+[常见问题]:
+a. 系统安装boost库版本与neu_ros_driver/src/lib/libneusdk_boost.so指向的链接库版本不兼容,导致crash
+->请检查 cat include/boost/version.hpp 的版本号, 如果版本低于1.70, 则需要修改软链接指向x86/libneusdk_boost_1_65.so.3.0.2
+
 
 
 
