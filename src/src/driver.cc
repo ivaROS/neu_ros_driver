@@ -276,10 +276,8 @@ namespace neuvition_driver
 //        neudrv->neuProcessCameraLadar(vcameraladarpos);
 
    }
-　　　virtual void on_framestart1(int nCode) {
-　　　}
-　　　virtual void on_framestart2(int nCode) {
-　　　}
+virtual void on_framestart1(int nCode) {}
+virtual void on_framestart2(int nCode) {}
 
        virtual void on_mjpgdata(int code, int64_t microsec, cv::Mat Mat) 
     { 
