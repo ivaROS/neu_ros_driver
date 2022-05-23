@@ -253,29 +253,35 @@ namespace neuvition_driver
 
     }
     
-       virtual void on_Ladar_Camera(  neuvition::NeuvCameraLadarDatas * neuvcameraladarpos)
+       virtual void on_Ladar_Camera(  neuvition::NeuvCameraLadarDatas * neuvcameraladarpos)　// neuvition::NeuvCameraLadarDatas 数据容器，通过循环遍历取出里面的单个元素
        {        
+	 /*
+		typedef struct camera_point_pos 
+		{
+    			int x;　相机像素坐标
+    			int y;
+    			int pixel_id;
+    			int line_id;
+    			uint8_t r; 颜色
+			uint8_t g; 
+			uint8_t b; 
+			int ladarx; 雷达坐标
+			int ladary;
+			int ladarz;
 
-//        std::vector<long int>  vcameraladarpos(642*360, 0);
-//
-//
-//        std::cout << "neuvcameraladarpos "  << neuvcameraladarpos->size() << std::endl;
-//
-//        for(int i = 0 ; i < neuvcameraladarpos->size();i++)
-//        {         
-//             neuvition::CAMERA_POINT_POS np  = neuvcameraladarpos->at(i);
-//                   // std::cout << "x = " << np.x << "y = " << np.y << std::endl;
-//                 //  std::cout << "xladar = " << np.ladarx << "yladar = " << np.ladary << "zladar = " << np.ladarz << std::endl;
-//
-//           long int ladarpos = np.ladarx | (np.ladary << 20) | (np.ladarz << 40);
-//            int index = np.y * 642 + np.x;
-//			//std::cout << "index "  << index << std::endl;
-//            vcameraladarpos[index] = ladarpos;
-//        }
-//
-//        neudrv->neuProcessCameraLadar(vcameraladarpos);
+		}CAMERA_POINT_POS;
+	*/
 
-   }
+	std::cout << "neuvcameraladarpos "  << neuvcameraladarpos->size() << std::endl;
+      	for(int i = 0 ; i < neuvcameraladarpos->size();i++)
+        {         
+             neuvition::CAMERA_POINT_POS np  = neuvcameraladarpos->at(i);
+           
+        }
+
+
+
+    }
 virtual void on_framestart1(int nCode) {}
 virtual void on_framestart2(int nCode) {}
 
