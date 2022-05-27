@@ -18,6 +18,7 @@ target_link_libraries(neuvition_node
   ${Boost_LIBRARIES}
   ${LIBCURL}
   ${PROJECT_SOURCE_DIR}/lib/libneusdk_boost.so
+  ${PROJECT_SOURCE_DIR}/lib/x86/libwoodpecker_arm.so
 )
 
 #${Boost_LIBRARIES}
