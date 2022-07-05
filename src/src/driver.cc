@@ -252,34 +252,8 @@ namespace neuvition_driver
     {
 
     }
-    
-       virtual void on_Ladar_Camera(  neuvition::NeuvCameraLadarDatas * neuvcameraladarpos)　// neuvition::NeuvCameraLadarDatas 数据容器，通过循环遍历取出里面的单个元素
-       {        
-	 /*
-		typedef struct camera_point_pos 
-		{
-    			int x;　相机像素坐标
-    			int y;
-    			int pixel_id;
-    			int line_id;
-    			uint8_t r; 颜色
-			uint8_t g; 
-			uint8_t b; 
-			int ladarx; 雷达坐标
-			int ladary;
-			int ladarz;
-
-		}CAMERA_POINT_POS;
-	*/
-
-	std::cout << "neuvcameraladarpos "  << neuvcameraladarpos->size() << std::endl;
-      	for(int i = 0 ; i < neuvcameraladarpos->size();i++)
-        {         
-             neuvition::CAMERA_POINT_POS np  = neuvcameraladarpos->at(i);
-           
-        }
-
-
+    virtual void on_Ladar_Camera(neuvition::NeuvCameraLadarDatas * neuvcameraladarpos)// neuvition::NeuvCameraLadarDatas 数据容器，通过循环遍历取出里面的单个元素
+    {
 
     }
 virtual void on_framestart1(int nCode) {}
