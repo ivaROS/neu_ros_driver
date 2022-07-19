@@ -534,6 +534,7 @@ void neuvitionDriver::neuInit()
         double hfov=neuvition::get_hfov();
         double vfov=neuvition::get_vfov();
         int device_type=neuvition::get_device_type();
+　　　　　　　　neuvition::set_g_filter_enabled(false);
 
         //neuvition::set_npvt_value(3);
 
