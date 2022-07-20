@@ -534,20 +534,7 @@ void neuvitionDriver::neuInit()
         double hfov=neuvition::get_hfov();
         double vfov=neuvition::get_vfov();
         int device_type=neuvition::get_device_type();
-　　　　　　　　neuvition::set_g_filter_enabled(false);
-
-        //neuvition::set_npvt_value(3);
-
-        /*neuvition::NeuPosCor pos_cor=neuvition::get_poscor_params();
-        double bias_y=0.0;
-        neuvition::compute_tof2xyz_table(hfov, vfov, bias_y, device_type, pos_cor); 
-
-        std::cout<< "HFov="<< hfov << ", VFov="<<vfov << std::endl;
-        neuvition::LaserIncidentAngles laserangles=neuvition::get_laser_angles(); 
-        std::cout<< "LaserIncidentAngles: " << laserangles[0] << "," << laserangles[1] << std::endl;
-        neuvition::compute_tof2xyz_table_with_multi_lasers(laserangles, device_type, pos_cor);*/
-
-
+neuvition::set_g_filter_enabled(false);
         neuStartScan();
         if(neuvition::is_scanning())  std::cout<<std::fixed<<std::setprecision(6)<<get_timestamp()<<" ..scanning" <<std::endl;
 
