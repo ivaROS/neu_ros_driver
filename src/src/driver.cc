@@ -263,20 +263,6 @@ virtual void on_framestart2(int nCode) {}
     { 
         if (Mat.empty()) 
             return;
-
-        // std::cout<< "neuvition:code  " << code << endl;
-        if(isImageRotate == 1)
-        {
-            transpose(Mat,Mat);
-            flip(Mat,Mat,1);
-            transpose(Mat,Mat);
-            flip(Mat,Mat,1);
-        }
-        else
-        {
-
-        }
-
         sensor_msgs::ImagePtr msg_ = cv_bridge::CvImage(std_msgs::Header(), "bgr8", Mat).toImageMsg();
 
         neudrv->neuProcessImage(msg_);
@@ -535,7 +521,7 @@ void neuvitionDriver::neuInit()
         double vfov=neuvition::get_vfov();
         int device_type=neuvition::get_device_type();
 　　　　　　　　neuvition::set_g_filter_enabled(false);
-
+	neuvition::set_flip_axis(false,true);
         //neuvition::set_npvt_value(3);
 
         /*neuvition::NeuPosCor pos_cor=neuvition::get_poscor_params();
@@ -558,6 +544,7 @@ void neuvitionDriver::neuInit()
         neuSetDataFrame(data_frame);
         neuSetColorMode(color_mode);
         neuVideoFusion(video_fusion);
+	
 
         neuStartData();
         usleep(200000);
