@@ -534,6 +534,7 @@ void neuvitionDriver::neuInit()
         neuvition::compute_tof2xyz_table_with_multi_lasers(laserangles, device_type, pos_cor);*/
 
 
+
         neuStartScan();
         if(neuvition::is_scanning())  std::cout<<std::fixed<<std::setprecision(6)<<get_timestamp()<<" ..scanning" <<std::endl;
 
