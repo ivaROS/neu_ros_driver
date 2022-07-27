@@ -123,7 +123,7 @@ namespace neuvition_driver
 
         virtual void on_framedata(int code,int64_t microsec, const neuvition::NeuvUnits& data, const neuvition::nvid_t& frame_id) 
         {
-               std::cout<< "on_framedata -- TS: " << get_timestamp()  << ", -- code: " << code << endl;
+               std::cout<< "on_framedata -- TS: " << get_timestamp()  << ", -- code: " << code << "point size = " << data.size() <<  endl;
       
             PointCloudT cloud_;
             cloud_.reserve(data.size());
@@ -131,7 +131,7 @@ namespace neuvition_driver
             predata = data;
 
             int i = 0 ;
-
+		neudrv->color_mode = 1;
             for (neuvition::NeuvUnits::const_iterator iter = data.begin(); iter != data.end(); iter++) 
             {
                 const neuvition::NeuvUnit& np = (*iter);
@@ -156,6 +156,7 @@ namespace neuvition_driver
                 }
 
                 i++;
+#if 1
 
                 if (neudrv->color_mode==0) /* 0:polychrome */
                 { 
@@ -194,6 +195,7 @@ namespace neuvition_driver
                     point.g = (crender&0x00ff00)>>8;
                     point.b = (crender&0x0000ff)>>0;
                 }
+#endif 
 
                 cloud_.push_back(point);  
 
@@ -263,6 +265,10 @@ virtual void on_framestart2(int nCode) {}
     { 
         if (Mat.empty()) 
             return;
+  transpose(Mat,Mat);
+            flip(Mat,Mat,1);
+            transpose(Mat,Mat);
+            flip(Mat,Mat,1);
         sensor_msgs::ImagePtr msg_ = cv_bridge::CvImage(std_msgs::Header(), "bgr8", Mat).toImageMsg();
 
         neudrv->neuProcessImage(msg_);
@@ -520,8 +526,8 @@ void neuvitionDriver::neuInit()
         double hfov=neuvition::get_hfov();
         double vfov=neuvition::get_vfov();
         int device_type=neuvition::get_device_type();
-	neuvition::set_g_filter_enabled(false);
-	neuvition::set_flip_axis(false,true);
+	neuvition::set_g_filter_enabled(true);
+	neuvition::set_flip_axis(true,true);
         //neuvition::set_npvt_value(3);
 
         /*neuvition::NeuPosCor pos_cor=neuvition::get_poscor_params();
