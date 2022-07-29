@@ -24,6 +24,9 @@ a. 系统安装boost库版本与neu_ros_driver/src/lib/libneusdk_boost.so指向�
 ->请检查 cat include/boost/version.hpp 的版本号, 如果版本低于1.70, 则需要修改软链接指向x86/libneusdk_boost-18.04.so.3.0.3
 
 可修改driverparams.yaml里面修改雷达部分参数
+其中特别参数说明
+1.laser_filters 雷达内置过滤算法，较为影响cpu，当帧率受到影响可以改成0
+
 
 
 

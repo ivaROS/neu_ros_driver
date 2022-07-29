@@ -37,3 +37,7 @@ A. The version of the installed boost library is incompatible with the version o
 - > please check the cat include/boost/version. The HPP version number, if the version is lower than 1.70, the need to modify the soft links pointing to the x86 / libneusdk_boost - 18.04 so. 3.0.3
 
 Modify radar parameters in driverPARAMs. YAMl
+
+The special parameters are described
+
+1. Laser_filters built-in filter algorithm of radar, which affects the CPU. If the frame rate is affected, it can be changed to 0
