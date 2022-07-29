@@ -23,6 +23,9 @@ roslaunch neuvition_driver neuvition_driver.launch
 a. 系统安装boost库版本与neu_ros_driver/src/lib/libneusdk_boost.so指向的链接库版本不兼容,导致crash
 ->请检查 cat include/boost/version.hpp 的版本号, 如果版本低于1.70, 则需要修改软链接指向x86/libneusdk_boost-18.04.so.3.0.3
 
+可修改driverparams.yaml里面修改雷达部分参数
+
+
 
 
 

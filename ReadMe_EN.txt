@@ -35,3 +35,5 @@ Frequently Asked Questions:
 A. The version of the installed boost library is incompatible with the version of the link library that neu_ros_driver/ SRC /lib/libneusdk_boost. So, causing the crash
 
 - > please check the cat include/boost/version. The HPP version number, if the version is lower than 1.70, the need to modify the soft links pointing to the x86 / libneusdk_boost - 18.04 so. 3.0.3
+
+Modify radar parameters in driverPARAMs. YAMl
