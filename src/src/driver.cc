@@ -265,10 +265,17 @@ virtual void on_framestart2(int nCode) {}
     { 
         if (Mat.empty()) 
             return;
-  transpose(Mat,Mat);
+    if(isImageRotate)
+{	
+	  transpose(Mat,Mat);
             flip(Mat,Mat,1);
             transpose(Mat,Mat);
             flip(Mat,Mat,1);
+}
+else
+{
+}
+
         sensor_msgs::ImagePtr msg_ = cv_bridge::CvImage(std_msgs::Header(), "bgr8", Mat).toImageMsg();
 
         neudrv->neuProcessImage(msg_);
