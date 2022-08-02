@@ -1,36 +1,43 @@
-This package describes the interface of interact with Neuvition's Lidar devices.
-
-The dependences:
-1.curl version
--the SDK defaultly linked with version CURL_OPENSSL_4 of curl.
--need you change the linker of 'neu_ros_driver/src/lib/libcurl.so' according to your system path. 
-
-2.As the compiled SDK depends on openCV3, you need update your ROS's related components such as libimage_proc.so、libcv_bridge.so... and so on.
-you may need downloading ROS_Perception source code and compile-installing the modules. you refer to the following steps:
-
-2-1. download the source code from github
-https://github.com/ros-perception/image_pipeline.git
-https://github.com/ros-perception/vision_opencv.git
-
-2-2. checkout the source code to the same version of your installed openCV
-
-2-3. run catkin_make to do compile，then install the components. for example: (you need change the INSTALL_PREFIX to your openCV path and ros path, and may need load ROS environment with 'source /opt/ros/melodic/setup.bash')
-catkin_make -DOpencv_DIR=/usr/share/OpenCV  -DCMAKE_INSTALL_PREFIX=/opt/ros/melodic install
+This software is published by Neuvition, Inc. www.neuvition.com and mainly describes the interactive interface and SDK integration interface with the company's radar equipment
 
 
-3.compile the source code of neuvition_driver(you need change the INSTALL_PREFIX to your openCV path and ros path, and may need load ROS environment with 'source /opt/ros/melodic/setup.bash')
-catkin_make -DOpencv_DIR=/usr/share/OpenCV  -DCMAKE_INSTALL_PREFIX=/opt/ros/melodic install
-
-4.the default SDK library is for 'x86' arch, which locates in 'neu_ros_driver/src/lib/libneusdk_boost_*.so'. 
-  you can modify this linker for 'arm' architecture as well. 
-
-5. launch neuvition_driver
-roslaunch neuvition_driver neuvition_driver.launch 
-
-6. you can change the parameters in 'driverparams.yaml' if need
-
-[Known issue]:
-the driver will crash if the boost version linked in library "neu_ros_driver/src/lib/libneusdk_boost.so" not compitalbe with system installed versioin.
-->if the installed boost version lower than 1.70 (cat include/boost/version.hpp),  you should link libneusdk_boost.so -> "x86/libneusdk_boost_1_65.so.3.0.2"
+Related dependencies and instructions are as follows:
 
 
+1. The curl version
+
+- The default version of curl is CURL_OPENSSL_4
+
+Curl - compile time please according to the system path modification neu_ros_driver/SRC/lib/libcurl. So the corresponding link
+
+
+
+2. OpenCV version You can modify the openCV version in cmakelist. TXT under SRC and SRC/SRC
+
+
+
+3. The default operating environment of the SDK is X86. The SDK library is stored in neu_ros_driver/ SRC /lib/libneusdk_boost_*.so
+
+The ARM SDK library is also provided. Please modify the link corresponding to neu_ros_driver/ SRC /lib/libneusdk_boost_*. So at compile time, Git branch can be switched to ARM branch
+
+
+4. Start neuvition_driver
+
+roslaunch neuvition_driver neuvition_driver.launch
+
+Or two terminals, one executing roscore and one executing rosrun neuvition_driver neuvition_node
+
+
+
+
+Frequently Asked Questions:
+
+A. The version of the installed boost library is incompatible with the version of the link library that neu_ros_driver/ SRC /lib/libneusdk_boost. So, causing the crash
+
+- > please check the cat include/boost/version. The HPP version number, if the version is lower than 1.70, the need to modify the soft links pointing to the x86 / libneusdk_boost - 18.04 so. 3.0.3
+
+Modify radar parameters in driverPARAMs. YAMl
+
+The special parameters are described
+
+1. Laser_filters built-in filter algorithm of radar, which affects the CPU. If the frame rate is affected, it can be changed to 0

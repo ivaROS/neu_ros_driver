@@ -265,10 +265,17 @@ virtual void on_framestart2(int nCode) {}
     { 
         if (Mat.empty()) 
             return;
-  transpose(Mat,Mat);
+    if(isImageRotate)
+{	
+	  transpose(Mat,Mat);
             flip(Mat,Mat,1);
             transpose(Mat,Mat);
             flip(Mat,Mat,1);
+}
+else
+{
+}
+
         sensor_msgs::ImagePtr msg_ = cv_bridge::CvImage(std_msgs::Header(), "bgr8", Mat).toImageMsg();
 
         neudrv->neuProcessImage(msg_);
@@ -316,6 +323,7 @@ neuvitionDriver::neuvitionDriver(ros::NodeHandle node, ros::NodeHandle private_n
     private_nh.param<int>("laser_time", isTimemode, 0);
     ROS_INFO_STREAM("laser_time [ "<< isTimemode << " ]");
 
+    neuvition::set_g_filter_enabled(ifilterSt);
     srv_ = boost::make_shared <dynamic_reconfigure::Server<neuvition_driver::NeuvitionNodeConfig> > (private_nh);
     dynamic_reconfigure::Server<neuvition_driver::NeuvitionNodeConfig>::CallbackType f;
     f = boost::bind (&neuvitionDriver::neuCallback, this, _1, _2);
@@ -369,7 +377,7 @@ void neuvitionDriver::neuCallback(neuvition_driver::NeuvitionNodeConfig &config,
 
     isImageRotate = config.laser_image;
     
-    neuvition::set_g_filter_enabled(true);
+  
 
   }
 
@@ -427,8 +435,7 @@ void neuvitionDriver::neuDisconnect() {
 
 void neuvitionDriver::neuSetLaserPeriod(int value) {
 
-    //0: 500HZ   1: 750KHZ
-    value +=1;
+   
     printf ("Laser Period: [%d]\n", value);
    
     int ret=neuvition::set_laser_interval(value);//3
@@ -444,11 +451,11 @@ void neuvitionDriver::neuSetDataFrame(int value) {
     int fps=0;
     int sramreads=0;
     switch(value) {
-        case(0): { sramreads = 6; fps = 5; break;}
-        case(1): { sramreads = 4; fps = 6; break;}
-        case(2): { sramreads = 4; fps = 10; break;}
-        case(3): { sramreads = 4; fps = 15; break;}
-        case(4): { sramreads = 2; fps = 30; break;}
+        case(0): { fps = 5; break;}
+        case(1): { fps = 6; break;}
+        case(2): { fps = 10; break;}
+        case(3): { fps = 15; break;}
+        case(4): { fps = 30; break;}
     }
     printf ("Data Frame: [%d]fps\n", fps);
     int ret = neuvition::set_frame_frequency(fps);
@@ -526,7 +533,7 @@ void neuvitionDriver::neuInit()
         double hfov=neuvition::get_hfov();
         double vfov=neuvition::get_vfov();
         int device_type=neuvition::get_device_type();
-	neuvition::set_g_filter_enabled(true);
+	
 	neuvition::set_flip_axis(true,true);
         //neuvition::set_npvt_value(3);
 
