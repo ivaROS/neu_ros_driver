@@ -265,7 +265,7 @@ virtual void on_framestart2(int nCode) {}
     { 
         if (Mat.empty()) 
             return;
-    if(isImageRotate)
+    if(0)
 {	
 	  transpose(Mat,Mat);
             flip(Mat,Mat,1);
