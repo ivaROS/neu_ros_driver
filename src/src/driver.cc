@@ -8,7 +8,7 @@
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl_conversions/pcl_conversions.h>
-
+#include <pcl/common/transforms.h>
 #include <pcl/io/pcd_io.h>
 #include <math.h>
 
@@ -219,9 +219,17 @@ namespace neuvition_driver
                printf("iMsecTime = %ld\n",iMsecTime);
 
            //neuvition::jason_camearinfo_clear(frame_id);
+	   /*
+	   Rotating point cloud
+           */
 
            iFrontFrameTime = iNowFrameTime;
-
+	   float FPi = 3.1415926;
+    	   float newthetax = 0 * (FPi / 180.0); // 0 Angle .You can enter any Angle you want
+	   Eigen::Affine3f transform_X = Eigen::Affine3f::Identity();
+    	   transform_X.translation() << 0,0,0; // translation
+           transform_X.rotate(Eigen::AngleAxisf(newthetax, Eigen::Vector3f::UnitX())); // Rotate around X
+           pcl::transformPointCloud(cloud_, cloud_, transform_X);
            neudrv->neuProcessPoint(cloud_);
        }
 
