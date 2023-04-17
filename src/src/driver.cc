@@ -561,9 +561,9 @@ void neuvitionDriver::neuInit()
 
         neuSetPwm(50);
         //0: 340HZ   1: 500KHZ    2: 750MHZ   3: 1MHZ
-        neuSetLaserPeriod(laser_period);
+        neuSetLaserPeriod(3);
         //0:30fps  1:20fps  2:15fps  3:10fps  4:6fps  5:5fps  6:3fps  7:2fps  8:1fps
-        neuSetDataFrame(data_frame);
+        neuSetDataFrame(3);
         neuSetColorMode(color_mode);
         neuVideoFusion(video_fusion);
 	
