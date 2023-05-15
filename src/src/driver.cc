@@ -543,8 +543,13 @@ void neuvitionDriver::neuInit()
         int device_type=neuvition::get_device_type();
 	
 	neuvition::set_flip_axis(true,true);
-        //neuvition::set_npvt_value(3);
 
+        neuvition::set_npvt_value(1); // first 
+
+	neuvition::set_g_filter_enabled(false);
+	neuvition::set_c_filter_enabled(false);
+	
+	
         /*neuvition::NeuPosCor pos_cor=neuvition::get_poscor_params();
         double bias_y=0.0;
         neuvition::compute_tof2xyz_table(hfov, vfov, bias_y, device_type, pos_cor); 
