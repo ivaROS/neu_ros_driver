@@ -314,7 +314,7 @@ neuvitionDriver::neuvitionDriver(ros::NodeHandle node, ros::NodeHandle private_n
     private_nh.param<int>("upstream_port", upstream_port, 6668);
     ROS_INFO_STREAM("upstreamPort [ "<< upstream_port << " ]");
 
-    private_nh.param<std::string>("upstream_host", upstream_host, std::string("192.168.1.101"));
+    private_nh.param<std::string>("upstream_host", upstream_host, std::string("192.168.1.100"));
     ROS_INFO_STREAM("upstreamHost [ "<< upstream_host << " ]");
 
 
