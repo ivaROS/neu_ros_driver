@@ -314,7 +314,7 @@ neuvitionDriver::neuvitionDriver(ros::NodeHandle node, ros::NodeHandle private_n
     private_nh.param<int>("upstream_port", upstream_port, 6668);
     ROS_INFO_STREAM("upstreamPort [ "<< upstream_port << " ]");
 
-    private_nh.param<std::string>("upstream_host", upstream_host, std::string("192.168.1.100"));
+    private_nh.param<std::string>("upstream_host", upstream_host, std::string("192.168.1.101"));
     ROS_INFO_STREAM("upstreamHost [ "<< upstream_host << " ]");
 
 
@@ -331,7 +331,7 @@ neuvitionDriver::neuvitionDriver(ros::NodeHandle node, ros::NodeHandle private_n
     private_nh.param<int>("laser_time", isTimemode, 0);
     ROS_INFO_STREAM("laser_time [ "<< isTimemode << " ]");
 
-    neuvition::set_g_filter_enabled(ifilterSt);
+   // neuvition::set_g_filter_enabled(ifilterSt);
     srv_ = boost::make_shared <dynamic_reconfigure::Server<neuvition_driver::NeuvitionNodeConfig> > (private_nh);
     dynamic_reconfigure::Server<neuvition_driver::NeuvitionNodeConfig>::CallbackType f;
     f = boost::bind (&neuvitionDriver::neuCallback, this, _1, _2);
@@ -349,6 +349,7 @@ neuvitionDriver::neuvitionDriver(ros::NodeHandle node, ros::NodeHandle private_n
 
 void neuvitionDriver::neuCallback(neuvition_driver::NeuvitionNodeConfig &config,  uint32_t level) 
 {
+#if 0
     std::cout << "neuvitionDriver::neuCallback" << endl;
     std::cout << "config::pwm_value" << config.pwm_value << endl;
      std::cout << "pwm_value" << pwm_value << endl;
@@ -382,7 +383,7 @@ void neuvitionDriver::neuCallback(neuvition_driver::NeuvitionNodeConfig &config,
         neuVideoFusion(video_fusion);
       neuStartData();
     }
-
+#endif
     isImageRotate = config.laser_image;
     
   
@@ -392,9 +393,9 @@ void neuvitionDriver::neuCallback(neuvition_driver::NeuvitionNodeConfig &config,
 void neuvitionDriver::neuConnect() 
 {
     printf ("Start connecting ...\n");
-    neuvition::set_camera_status(true);
-    neuvition::set_flip_axis(false, true);
-    neuvition::set_mjpg_curl(true);
+  //  neuvition::set_camera_status(true);
+ //   neuvition::set_flip_axis(false, true);
+ //   neuvition::set_mjpg_curl(true);
 
     neuvition::INeuvEvent* phandler = new gEventHandler(this);
 
@@ -408,13 +409,13 @@ void neuvitionDriver::neuConnect()
 void neuvitionDriver::neuStartScan() {
     std::cout<<std::fixed<<std::setprecision(6)<<get_timestamp()<<" ..start scan"<<std::endl;
     int ret=neuvition::start_scan(); showretval(ret); // ask device to start scanning
-    usleep(200000);
+    usleep(2000000);
 }
 
 void neuvitionDriver::neuStartData() {
     std::cout<<std::fixed<<std::setprecision(6)<<get_timestamp()<<" ..start stream"<<std::endl;
     int ret=neuvition::start_stream(); showretval(ret); // ask device to start streaming
-    usleep(200000);
+    usleep(2000000);
 
 }
 
@@ -422,14 +423,14 @@ void neuvitionDriver::neuStartData() {
 void neuvitionDriver::neuStopScan() {
     std::cout<<std::fixed<<std::setprecision(6)<<get_timestamp()<<" ..stop scan"<<std::endl;
     int ret=neuvition::stop_scan(); showretval(ret); // ask device to stop scanning
-    usleep(200000);
+    usleep(2000000);
 }
 
 
 void neuvitionDriver::neuStopData() {
     std::cout<<std::fixed<<std::setprecision(6)<<get_timestamp()<<" ..stop stream"<<std::endl;
     int ret=neuvition::stop_stream(); showretval(ret); // ask device to stop streaming
-    usleep(200000);
+    usleep(2000000);
 
 }
 
@@ -542,12 +543,12 @@ void neuvitionDriver::neuInit()
         double vfov=neuvition::get_vfov();
         int device_type=neuvition::get_device_type();
 	
-	neuvition::set_flip_axis(true,true);
+	neuvition::set_flip_axis(false,true); //  x y
 
         neuvition::set_npvt_value(1); // first 
 
-	neuvition::set_g_filter_enabled(false);
-	neuvition::set_c_filter_enabled(false);
+	//neuvition::set_g_filter_enabled(true);
+	//neuvition::set_c_filter_enabled(true);
 	
 	
         /*neuvition::NeuPosCor pos_cor=neuvition::get_poscor_params();
@@ -564,19 +565,19 @@ void neuvitionDriver::neuInit()
         neuStartScan();
         if(neuvition::is_scanning())  std::cout<<std::fixed<<std::setprecision(6)<<get_timestamp()<<" ..scanning" <<std::endl;
 
-        neuSetPwm(50);
+       // neuSetPwm(50);
         //0: 340HZ   1: 500KHZ    2: 750MHZ   3: 1MHZ
-        neuSetLaserPeriod(3);
+     //   neuSetLaserPeriod(3);
         //0:30fps  1:20fps  2:15fps  3:10fps  4:6fps  5:5fps  6:3fps  7:2fps  8:1fps
-        neuSetDataFrame(3);
-        neuSetColorMode(color_mode);
+     //   neuSetDataFrame(3);
+      //  neuSetColorMode(color_mode);
         neuVideoFusion(video_fusion);
 	
 
         neuStartData();
         usleep(200000);
 
-        neuvition::set_gps_status(true);
+       // neuvition::set_gps_status(true);
         if(neuvition::is_streaming())
         { 
             std::cout<<std::fixed<<std::setprecision(6)<<get_timestamp()<<" ..streaming"<<std::endl;
