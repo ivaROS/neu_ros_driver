@@ -547,8 +547,7 @@ void neuvitionDriver::neuInit()
 
         neuvition::set_npvt_value(1); // first 
 
-	//neuvition::set_g_filter_enabled(true);
-	//neuvition::set_c_filter_enabled(true);
+
 	
 	
         /*neuvition::NeuPosCor pos_cor=neuvition::get_poscor_params();
