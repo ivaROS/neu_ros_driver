@@ -3,7 +3,7 @@ project(neuvition_driver)
 
 set(OpenCV_DIR /usr/share/OpenCV)
 
-find_package(OpenCV 3 REQUIRED)
+find_package(OpenCV 4 REQUIRED)
 
 set(${PROJECT_NAME}_CATKIN_DEPS 
     dynamic_reconfigure
@@ -45,7 +45,7 @@ endif()
 # This driver uses PCL
 find_package(PCL REQUIRED)
 
-add_compile_options(-std=c++11 -O3)
+add_compile_options(-std=c++14 -O3)
 add_compile_options(-mcmodel=medium)
 # libneuvsdk
 

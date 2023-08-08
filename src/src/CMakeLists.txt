@@ -6,7 +6,7 @@ add_dependencies(neuvition_node neuvition_driver_gencfg)
 set  (LIBCURL ${PROJECT_SOURCE_DIR}/lib/libcurl.so)
 
 set(OpenCV_DIR /usr/share/OpenCV)
-find_package(OpenCV 3 REQUIRED)
+find_package(OpenCV 4 REQUIRED)
 
 find_package(Boost REQUIRED COMPONENTS system thread)
 
